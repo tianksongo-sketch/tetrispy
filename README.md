@@ -1,6 +1,6 @@
-# games
+# tetrispy
 
-Terminal games you install and run with two commands.
+Terminal Tetris you install and run with two commands.
 
     load tetris     # downloads the game
     run             # starts the most recently loaded game
@@ -9,15 +9,15 @@ Terminal games you install and run with two commands.
 
 Linux, macOS, Termux:
 
-    curl -fsSL https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/games/main/install.sh | bash
+    curl -fsSL https://raw.githubusercontent.com/tianksongo-sketch/tetrispy/main/install.sh | bash
 
 or with git:
 
-    git clone https://github.com/YOUR_GITHUB_USERNAME/games && bash games/install.sh
+    git clone https://github.com/tianksongo-sketch/tetrispy && bash tetrispy/install.sh
 
 Windows (PowerShell):
 
-    irm https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/games/main/install.ps1 | iex
+    irm https://raw.githubusercontent.com/tianksongo-sketch/tetrispy/main/install.ps1 | iex
 
 Then open a new terminal and play:
 

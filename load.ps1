@@ -1,8 +1,8 @@
 # load.ps1 - Windows version of "load". Download a game, then type: run
 param([string]$Name)
 
-$GhUser  = "YOUR_GITHUB_USERNAME"   # change this once
-$Repo    = "games"
+$GhUser  = "tianksongo-sketch"   # change this once
+$Repo    = "tetrispy"
 $GamesDir = Join-Path $HOME "games"
 $BinDir   = Join-Path $HOME "bin"
 

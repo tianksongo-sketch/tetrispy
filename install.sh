@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Installs the "load" and "run" commands. Run once, either way:
-#   curl -fsSL https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/games/main/install.sh | bash
-#   git clone https://github.com/YOUR_GITHUB_USERNAME/games && bash games/install.sh
+#   curl -fsSL https://raw.githubusercontent.com/tianksongo-sketch/tetrispy/main/install.sh | bash
+#   git clone https://github.com/tianksongo-sketch/games && bash games/install.sh
 set -eu
 
-GH_USER="YOUR_GITHUB_USERNAME"
-REPO="games"
+GH_USER="tianksongo-sketch"
+REPO="tetrispy"
 RAW="https://raw.githubusercontent.com/$GH_USER/$REPO/main"
 BIN_DIR="$HOME/.local/bin"
 

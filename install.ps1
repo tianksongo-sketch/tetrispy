@@ -1,8 +1,8 @@
 # Installs the "load" and "run" commands on Windows. Run once in PowerShell:
-#   irm https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/games/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/tianksongo-sketch/tetrispy/main/install.ps1 | iex
 
-$GhUser  = "YOUR_GITHUB_USERNAME"
-$Raw     = "https://raw.githubusercontent.com/$GhUser/games/main"
+$GhUser  = "tianksongo-sketch"
+$Raw     = "https://raw.githubusercontent.com/$GhUser/tetrispy/main"
 $BinDir  = Join-Path $HOME "bin"
 
 New-Item -ItemType Directory -Force -Path $BinDir | Out-Null

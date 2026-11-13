@@ -3,8 +3,8 @@
 #   load tetris     ->  Done. Type: run
 set -eu
 
-GH_USER="YOUR_GITHUB_USERNAME"     # change this once
-REPO="games"                       # repo with one folder per game
+GH_USER="tianksongo-sketch"     # change this once
+REPO="tetrispy"                       # repo with one folder per game
 GAMES_DIR="$HOME/games"
 BIN_DIR="$HOME/.local/bin"
 
