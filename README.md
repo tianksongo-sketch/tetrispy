@@ -1,28 +1,22 @@
 # tetrispy
 
-Terminal Tetris you install and run with two commands.
-
-    load tetris     # downloads the game
-    run             # starts the most recently loaded game
+Terminal Tetris, installed and started with one command.
 
 ## Install (once)
 
-Linux, macOS, Termux:
+Linux, macOS, Termux, proot Linux:
 
     curl -fsSL https://raw.githubusercontent.com/tianksongo-sketch/tetrispy/main/install.sh | bash
-
-or with git:
-
-    git clone https://github.com/tianksongo-sketch/tetrispy && bash tetrispy/install.sh
 
 Windows (PowerShell):
 
     irm https://raw.githubusercontent.com/tianksongo-sketch/tetrispy/main/install.ps1 | iex
 
-Then open a new terminal and play:
+## Play
 
     load tetris
-    run
+
+The game downloads and starts right away. Later, `run` starts it again.
 
 ## Controls
 

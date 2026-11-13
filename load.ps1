@@ -1,8 +1,10 @@
-# load.ps1 - Windows version of "load". Download a game, then type: run
+# load.ps1 - Windows version of "load". Downloads a game and starts it.
+#   load tetris     ->  downloads and starts tetris
+#   run             ->  starts the last loaded game again
 param([string]$Name)
 
-$GhUser  = "tianksongo-sketch"   # change this once
-$Repo    = "tetrispy"
+$GhUser   = "tianksongo-sketch"
+$Repo     = "tetrispy"
 $GamesDir = Join-Path $HOME "games"
 $BinDir   = Join-Path $HOME "bin"
 
@@ -27,7 +29,9 @@ if ($LASTEXITCODE -ne 0) { Write-Host "Download failed: $url"; exit 1 }
 $runCmd = "@echo off`r`n`"$($py.Source)`" `"$target`" %*"
 Set-Content -Path (Join-Path $BinDir "run.cmd") -Value $runCmd -Encoding ASCII
 
-Write-Host "Done. Type: run"
 if ($env:Path -notlike "*$BinDir*") {
-  Write-Host "One-time setup: add $BinDir to your PATH (Settings > Environment Variables)."
+  Write-Host "Tip: add $BinDir to your PATH so 'run' works everywhere."
 }
+
+Write-Host "Starting $Name ... (next time, just type: run)"
+& $py.Source $target

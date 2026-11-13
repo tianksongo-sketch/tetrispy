@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Installs the "load" and "run" commands. Run once, either way:
+# Installs the "load" and "run" commands.
 #   curl -fsSL https://raw.githubusercontent.com/tianksongo-sketch/tetrispy/main/install.sh | bash
-#   git clone https://github.com/tianksongo-sketch/games && bash games/install.sh
+# or after git clone:
+#   bash tetrispy/install.sh
 set -eu
 
 GH_USER="tianksongo-sketch"
@@ -27,19 +28,18 @@ fi
 chmod +x "$BIN_DIR/load"
 echo "Installed: $BIN_DIR/load"
 
-# Make $BIN_DIR part of PATH in future shells (added once).
-case ":$PATH:" in
-  *":$BIN_DIR:"*) ;;
-  *)
-    case "${SHELL:-}" in
-      *zsh) rc="$HOME/.zshrc" ;;
-      *)    rc="$HOME/.bashrc" ;;
-    esac
-    if ! grep -qsF "$BIN_DIR" "$rc" 2>/dev/null; then
-      echo "export PATH=\"$BIN_DIR:\$PATH\"" >> "$rc"
-    fi
+# Put $BIN_DIR on PATH in future shells. Login shells (Arch, macOS Terminal)
+# read .bash_profile, interactive shells read .bashrc, so write to both.
+line='export PATH="$HOME/.local/bin:$PATH"'
+rcs="$HOME/.bashrc $HOME/.bash_profile"
+case "${SHELL:-}" in *zsh*) rcs="$rcs $HOME/.zshrc" ;; esac
+for rc in $rcs; do
+  if ! grep -qsF '.local/bin' "$rc" 2>/dev/null; then
+    printf '%s\n' "$line" >> "$rc"
     echo "PATH updated in $rc"
-    ;;
-esac
+  fi
+done
 
-echo "Done. Open a new terminal, then type:  load tetris   and then:  run"
+echo
+echo "Done. Type:  load tetris"
+echo "(in the current terminal only, you can also run: $line)"

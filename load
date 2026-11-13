@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# load - download a game from your GitHub "games" repo, then type: run
-#   load tetris     ->  Done. Type: run
+# load - download a game from GitHub and start it right away.
+#   load tetris     ->  downloads and starts tetris
+#   run             ->  starts the last loaded game again
 set -eu
 
-GH_USER="tianksongo-sketch"     # change this once
-REPO="tetrispy"                       # repo with one folder per game
+GH_USER="tianksongo-sketch"
+REPO="tetrispy"
 GAMES_DIR="$HOME/games"
 BIN_DIR="$HOME/.local/bin"
 
@@ -22,9 +23,10 @@ if [ -z "$PY" ]; then echo "Python 3 is required."; exit 1; fi
 if ! command -v curl >/dev/null 2>&1; then echo "curl is required."; exit 1; fi
 
 url="https://raw.githubusercontent.com/$GH_USER/$REPO/main/$name/$name.py"
+game="$GAMES_DIR/$name/$name.py"
 mkdir -p "$GAMES_DIR/$name" "$BIN_DIR"
 echo "Downloading $name ..."
-if ! curl -fsSL "$url" -o "$GAMES_DIR/$name/$name.py"; then
+if ! curl -fsSL "$url" -o "$game"; then
   echo "Download failed: $url"
   exit 1
 fi
@@ -32,13 +34,9 @@ fi
 # 'run' starts the most recently loaded game
 cat > "$BIN_DIR/run" <<EOF
 #!/usr/bin/env bash
-exec "$PY" "$GAMES_DIR/$name/$name.py" "\$@"
+exec "$PY" "$game" "\$@"
 EOF
 chmod +x "$BIN_DIR/run"
 
-echo "Done. Type: run"
-case ":$PATH:" in
-  *":$BIN_DIR:"*) ;;
-  *) echo "One-time setup: add this line to your shell profile:"
-     echo "  export PATH=\"$BIN_DIR:\$PATH\"" ;;
-esac
+echo "Starting $name ... (next time, just type: run)"
+exec "$PY" "$game" "${@:2}"
