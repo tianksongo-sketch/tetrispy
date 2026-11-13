@@ -43,7 +43,7 @@ SHAPES = {
     "J": [[1, 0, 0], [1, 1, 1]],
     "L": [[0, 0, 1], [1, 1, 1]],
 }
-COLORS = {"I": 96, "O": 93, "T": 95, "S": 92, "Z": 91, "J": 94, "L": 33}
+COLORS = {"I": 96, "O": 93, "T": 95, "S": 92, "Z": 91, "J": 94, "L": 33, "GHOST": 90}
 MONO = "--mono" in sys.argv
 NO_SOUND = "--no-sound" in sys.argv
 
@@ -372,13 +372,11 @@ class Game:
 
 # -------------------------------------------------------------- drawing ----
 
-def render_grid(grid, frame):
-    """
-    Draw a grid of piece letters (or None) as ASCII boxes.
-    Each cell is 3 columns x 2 lines: "+--" over "|  " (corners shared).
-    Neighbouring cells share their border lines, so pieces look like blocks.
-    frame=True draws an outer border around the whole grid.
-    """
+GHOST_CHARS = {"+": ".", "-": ".", "|": ":"}   # dotted version of the box edges
+
+
+def edge_canvas(grid, frame):
+    """Build the character canvas (and per-character piece kind) for a grid."""
     rows, cols = len(grid), len(grid[0])
     H, W = 2 * rows + 1, 3 * cols + 1
     ch = [[" "] * W for _ in range(H)]
@@ -399,7 +397,6 @@ def render_grid(grid, frame):
             return True, right or left
         return False, None
 
-    # corners
     for y in range(rows + 1):
         for x in range(cols + 1):
             hits = [h_edge(y, x - 1), h_edge(y, x),
@@ -409,7 +406,6 @@ def render_grid(grid, frame):
                     ch[2 * y][3 * x] = "+"
                     kd[2 * y][3 * x] = kind
                     break
-    # horizontal edges
     for y in range(rows + 1):
         for c in range(cols):
             ok, kind = h_edge(y, c)
@@ -417,18 +413,37 @@ def render_grid(grid, frame):
                 for i in (1, 2):
                     ch[2 * y][3 * c + i] = "-"
                     kd[2 * y][3 * c + i] = kind
-    # vertical edges
     for r in range(rows):
         for x in range(cols + 1):
             ok, kind = v_edge(r, x)
             if ok:
                 ch[2 * r + 1][3 * x] = "|"
                 kd[2 * r + 1][3 * x] = kind
+    return ch, kd
+
+
+def render_grid(grid, frame, ghost=None):
+    """
+    Draw a grid of piece letters (or None) as ASCII boxes.
+    Each cell is 3 columns x 2 lines: "+--" over "|  " (corners shared).
+    Neighbouring cells share their border lines, so pieces look like blocks.
+    frame=True draws an outer border around the whole grid.
+    ghost: optional grid marking the landing spot; drawn as dotted gray boxes
+    wherever the real pieces do not already draw a line.
+    """
+    ch, kd = edge_canvas(grid, frame)
+    if ghost:
+        gch, _ = edge_canvas(ghost, False)
+        for r in range(len(ch)):
+            for c in range(len(ch[0])):
+                if ch[r][c] == " " and gch[r][c] != " ":
+                    ch[r][c] = GHOST_CHARS[gch[r][c]]
+                    kd[r][c] = "GHOST"
 
     lines = []
-    for r in range(H):
+    for r in range(len(ch)):
         parts = []
-        for c in range(W):
+        for c in range(len(ch[0])):
             k = kd[r][c]
             if k and not MONO:
                 parts.append(f"\033[{COLORS[k]}m{ch[r][c]}\033[0m")
@@ -436,6 +451,21 @@ def render_grid(grid, frame):
                 parts.append(ch[r][c])
         lines.append("".join(parts))
     return lines
+
+
+def ghost_grid(game):
+    """Grid marking where the current piece would land on a hard drop."""
+    if game.over:
+        return None
+    gy = game.y
+    while game.can_place(game.shape, game.x, gy + 1):
+        gy += 1
+    grid = [[None] * WIDTH for _ in range(HEIGHT)]
+    for r, row in enumerate(game.shape):
+        for c, v in enumerate(row):
+            if v and 0 <= gy + r < HEIGHT and 0 <= game.x + c < WIDTH:
+                grid[gy + r][game.x + c] = "G"
+    return grid
 
 
 def board_with_piece(game):
@@ -456,6 +486,7 @@ def sidebar(game, preview_lines, sound_status):
         lines += ["GAME OVER", "End restarts", "Esc quits", ""]
     elif game.paused:
         lines += ["PAUSED", "Home resumes", ""]
+    lines += ["dotted = landing spot", ""]
     lines += ["CONTROLS", "<- ->       move", "up          rotate",
               "down        soft drop", "PgDn        hard drop",
               "Enter       hard drop", "Insert      hard drop",
@@ -465,7 +496,8 @@ def sidebar(game, preview_lines, sound_status):
 
 
 def draw(game, sound_status):
-    board_lines = render_grid(board_with_piece(game), frame=True)
+    board_lines = render_grid(board_with_piece(game), frame=True,
+                              ghost=ghost_grid(game))
 
     preview = [[None] * 4 for _ in range(4)]
     shape = SHAPES[game.next_kind]
