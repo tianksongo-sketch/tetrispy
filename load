@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # load - download a game from GitHub and start it right away.
 #   load tetris     ->  downloads and starts tetris
-#   run             ->  starts the last loaded game again
+# Later, start it again with:  run tetris
 set -eu
 
 GH_USER="tianksongo-sketch"
 REPO="tetrispy"
 GAMES_DIR="$HOME/games"
-BIN_DIR="$HOME/.local/bin"
 
 name="${1:-}"
 if [ -z "$name" ]; then
@@ -24,19 +23,12 @@ if ! command -v curl >/dev/null 2>&1; then echo "curl is required."; exit 1; fi
 
 url="https://raw.githubusercontent.com/$GH_USER/$REPO/main/$name/$name.py"
 game="$GAMES_DIR/$name/$name.py"
-mkdir -p "$GAMES_DIR/$name" "$BIN_DIR"
+mkdir -p "$GAMES_DIR/$name"
 echo "Downloading $name ..."
 if ! curl -fsSL "$url" -o "$game"; then
   echo "Download failed: $url"
   exit 1
 fi
 
-# 'run' starts the most recently loaded game
-cat > "$BIN_DIR/run" <<EOF
-#!/usr/bin/env bash
-exec "$PY" "$game" "\$@"
-EOF
-chmod +x "$BIN_DIR/run"
-
-echo "Starting $name ... (next time, just type: run)"
+echo "Starting $name ... (next time, type: run $name)"
 exec "$PY" "$game" "${@:2}"

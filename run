@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# run <game> - start a game that was downloaded with "load"
+#   run tetris
+set -eu
+
+GAMES_DIR="$HOME/games"
+
+if [ $# -lt 1 ]; then
+  echo "usage: run <game>      example: run tetris"
+  echo "installed games:"
+  ls "$GAMES_DIR" 2>/dev/null | sed 's/^/  /' || echo "  (none yet - try: load tetris)"
+  exit 1
+fi
+
+name="$1"
+shift
+case "$name" in
+  *[!a-zA-Z0-9_-]*) echo "invalid game name: $name"; exit 1 ;;
+esac
+
+game="$GAMES_DIR/$name/$name.py"
+if [ ! -f "$game" ]; then
+  echo "$name is not installed. Type: load $name"
+  exit 1
+fi
+
+PY="$(command -v python3 || command -v python || true)"
+if [ -z "$PY" ]; then echo "Python 3 is required."; exit 1; fi
+
+exec "$PY" "$game" "$@"

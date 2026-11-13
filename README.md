@@ -14,11 +14,10 @@ Windows (PowerShell):
 
 ## Play
 
-    load tetris
-
-The game downloads and starts right away. Later, `run` starts it again.
+    load tetris     # downloads and starts the game
+    run tetris      # starts it again later
 
 ## Controls
 
 Left/Right move, Up rotate, Down soft drop, PgDn / Enter / Insert hard drop,
-Home pause, End restart, Esc or Ctrl+C quit.
+Home pause, End restart (press twice), Esc or Ctrl+C quit.
