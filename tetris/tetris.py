@@ -43,7 +43,7 @@ SHAPES = {
     "J": [[1, 0, 0], [1, 1, 1]],
     "L": [[0, 0, 1], [1, 1, 1]],
 }
-COLORS = {"I": 96, "O": 93, "T": 95, "S": 92, "Z": 91, "J": 94, "L": 33, "GHOST": 90}
+COLORS = {"I": 96, "O": 93, "T": 95, "S": 92, "Z": 91, "J": 94, "L": 33, "GHOST": 90, "MSG": 97}
 MONO = "--mono" in sys.argv
 NO_SOUND = "--no-sound" in sys.argv
 
@@ -274,6 +274,7 @@ class Game:
         self.level = 1
         self.paused = False
         self.over = False
+        self.confirm_restart = False
         self.fall_timer = 0.0
         self.next_kind = self._draw()
         self.spawn()
@@ -348,9 +349,17 @@ class Game:
             self.score += LINE_POINTS[cleared] * self.level
             self.level = self.lines // 10 + 1
 
+    def frozen(self):
+        return self.paused or self.confirm_restart or self.over
+
     def handle(self, key):
-        if key == "RESTART":
-            self.reset()
+        if self.confirm_restart:             # answer to the restart question
+            self.confirm_restart = False
+            if key == "RESTART":             # End pressed again: restart
+                self.reset()
+            return                           # any other key cancels
+        if key == "RESTART":                 # first End press: ask first
+            self.confirm_restart = True
             return
         if self.over:
             return
@@ -422,7 +431,15 @@ def edge_canvas(grid, frame):
     return ch, kd
 
 
-def render_grid(grid, frame, ghost=None):
+def make_box(text_lines):
+    """ASCII message box, e.g. +------+ / |PAUSED| / +------+."""
+    inner = max(len(t) for t in text_lines) + 4
+    top = "+" + "-" * inner + "+"
+    body = ["|" + t.center(inner) + "|" for t in text_lines]
+    return [top] + body + [top]
+
+
+def render_grid(grid, frame, ghost=None, overlay=None):
     """
     Draw a grid of piece letters (or None) as ASCII boxes.
     Each cell is 3 columns x 2 lines: "+--" over "|  " (corners shared).
@@ -439,6 +456,15 @@ def render_grid(grid, frame, ghost=None):
                 if ch[r][c] == " " and gch[r][c] != " ":
                     ch[r][c] = GHOST_CHARS[gch[r][c]]
                     kd[r][c] = "GHOST"
+
+    if overlay:
+        box = make_box(overlay)
+        top = (len(ch) - len(box)) // 2
+        left = (len(ch[0]) - len(box[0])) // 2
+        for i, row in enumerate(box):
+            for j, char in enumerate(row):
+                ch[top + i][left + j] = char
+                kd[top + i][left + j] = "MSG"
 
     lines = []
     for r in range(len(ch)):
@@ -484,8 +510,6 @@ def sidebar(game, preview_lines, sound_status):
               f"LEVEL  {game.level}", f"MUSIC  {sound_status}", ""]
     if game.over:
         lines += ["GAME OVER", "End restarts", "Esc quits", ""]
-    elif game.paused:
-        lines += ["PAUSED", "Home resumes", ""]
     lines += ["dotted = landing spot", ""]
     lines += ["CONTROLS", "<- ->       move", "up          rotate",
               "down        soft drop", "PgDn        hard drop",
@@ -496,8 +520,13 @@ def sidebar(game, preview_lines, sound_status):
 
 
 def draw(game, sound_status):
+    overlay = None
+    if game.confirm_restart:
+        overlay = ["RESTART GAME?", "", "End again: yes", "Any other key: no"]
+    elif game.paused:
+        overlay = ["PAUSED", "", "Home: resume"]
     board_lines = render_grid(board_with_piece(game), frame=True,
-                              ghost=ghost_grid(game))
+                              ghost=ghost_grid(game), overlay=overlay)
 
     preview = [[None] * 4 for _ in range(4)]
     shape = SHAPES[game.next_kind]
@@ -604,7 +633,7 @@ def main():
                 game.handle(key)
 
             now = time.monotonic()
-            if not game.paused and not game.over:
+            if not game.frozen():
                 game.fall_timer += now - last
                 if game.fall_timer >= game.fall_interval():
                     game.fall_timer = 0.0
